@@ -835,12 +835,12 @@ class Paired_CRCNS_HC1_Generator(DeepGenerator):
         shuffle_indexes = self.list_samples[indexes]
         # CHANGE
         input_full = np.zeros(
-            [self.batch_size, 4, 1,
-             self.pre_frame + self.post_frame],
+            [self.batch_size,
+             self.pre_frame + self.post_frame, 4, 1],
             dtype="float32",
         )
         output_full = np.zeros(
-            [self.batch_size, 4, 1, 1], dtype="float32"
+            [self.batch_size, 1, 4, 1], dtype="float32"
         )
 
         for batch_index, frame_index in enumerate(shuffle_indexes):
@@ -857,10 +857,10 @@ class Paired_CRCNS_HC1_Generator(DeepGenerator):
         # We reorganize to follow true geometry of probe for convolution
         # CHANGED
         input_full = np.zeros(
-            [1, 4, 1,
-             self.pre_frame + self.post_frame], dtype="float32"
+            [1,
+             self.pre_frame + self.post_frame, 4, 1], dtype="float32"
         )
-        output_full = np.zeros([1, 4, 1, 1], dtype="float32")
+        output_full = np.zeros([1, 1, 4, 1], dtype="float32")
 
         input_index = np.arange(
             index_frame - self.pre_frame - self.pre_post_omission,
@@ -878,13 +878,13 @@ class Paired_CRCNS_HC1_Generator(DeepGenerator):
         # frames x channels x color
         # frames x color x channels
         # channels x color x frames
-        data_img_input = self.raw_data[input_index, :4].T
+        data_img_input = self.raw_data[input_index, :4]
         data_img_output = self.raw_data[index_frame, :4]
         # print(data_img_output.shape)
 
         # CHANGE
-        data_img_input = np.expand_dims(data_img_input, axis=1)
-        # data_img_input = np.swapaxes(data_img_input, 0, 2)
+        # data_img_input = np.expand_dims(data_img_input, axis=2)
+        # data_img_output = np.expand_dims(data_img_output, axis=2)
 
         data_img_input = (
             data_img_input.astype("float32") - self.local_mean
@@ -899,11 +899,11 @@ class Paired_CRCNS_HC1_Generator(DeepGenerator):
         # odd = even + 1
 
         # CHANGE
-        input_full[0] = data_img_input
+        input_full[0,:,:,0] = data_img_input
         # input_full[0, odd, 1, :] = data_img_input[:, 1, :]
 
         # CHANGE
-        output_full[0, :, 0, 0] = data_img_output
+        output_full[0,:,:,0] = data_img_output
         # output_full[0, odd, 1, 0] = data_img_output[:, 1]
 
         return input_full, output_full

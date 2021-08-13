@@ -256,7 +256,8 @@ def unet_single_ephys_1024(path_json):
         conv1 = Conv2D(64, (2, 2), activation="relu", padding="same")(
             input_img
         )  # 512 x 512 x 32
-        pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)  # 14 x 14 x 32
+        # CHANGE pool_size from (2,2) to (2,1)
+        pool1 = MaxPooling2D(pool_size=(2, 1))(conv1)  # 14 x 14 x 32
         conv2 = Conv2D(128, (3, 1), activation="relu", padding="same")(
             pool1
         )  # 256 x 256 x 64
@@ -303,6 +304,79 @@ def unet_single_ephys_1024(path_json):
 
     return local_network_function
 
+def unet_tetrode(path_json):
+    def local_network_function(input_img):
+
+        # encoder
+        # input = batches x frames x chans
+        print(f'input_img shape: {input_img.shape}')
+
+        conv1 = Conv2D(64, (2, 2), activation="relu", padding="same")(
+            input_img)
+        print(f'conv1 shape: {conv1.shape}')
+ 
+         # 512 x 512 x 32
+        # CHANGE pool_size from (2,2) to (2,1)
+        pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)  # 14 x 14 x 32
+        print(f'pool1 shape: {pool1.shape}')
+        conv2 = Conv2D(128, (3, 1), activation="relu", padding="same")(
+            pool1
+        )  # 256 x 256 x 64
+        print(f'conv2 shape: {conv2.shape}')
+        pool2 = MaxPooling2D(pool_size=(2, 1))(conv2)  # 7 x 7 x 64#
+        print(f'pool2 shape: {pool2.shape}')
+
+        conv3 = Conv2D(256, (3, 1), activation="relu", padding="same")(
+            pool2
+        )  # 128 x 128 x 128 (small and thick)
+        print(f'conv3 shape: {conv3.shape}')
+
+        pool3 = MaxPooling2D(pool_size=(2, 1))(conv3)
+        print(f'pool3 shape: {pool3.shape}')
+
+        conv4 = Conv2D(512, (2, 1), activation="relu", padding="same")(
+            pool3
+        )  # 128 x 128 x 128 (small and thick)
+        print(f'conv4 shape: {conv4.shape}')
+
+        pool4 = MaxPooling2D(pool_size=(2, 1))(conv4)
+        print(f'pool4 shape: {pool4.shape}')
+
+        conv5 = Conv2D(1024, (2, 1), activation="relu", padding="same")(
+            pool4
+        )  # 128 x 128 x 128 (small and thick)
+        print(f'conv5 shape: {conv5.shape}')
+
+        # decoder
+        up1 = UpSampling2D((2, 1))(conv5)  # 14 x 14 x 128
+        print(f'up1 shape: {up1.shape}')
+        print(f'conv4 shape: {conv4.shape}')
+        conc_up_1 = Concatenate()([up1, conv4])
+        conv7 = Conv2D(512, (3, 1), activation="relu", padding="same")(
+            conc_up_1
+        )  # 256 x 256 x 64
+        up2 = UpSampling2D((2, 1))(conv7)  # 28 x 28 x 64
+        conc_up_2 = Concatenate()([up2, conv3])
+        conv8 = Conv2D(256, (3, 1), activation="relu", padding="same")(
+            conc_up_2
+        )  # 512 x 512 x 1
+        up3 = UpSampling2D((2, 1))(conv8)  # 28 x 28 x 64
+        conc_up_3 = Concatenate()([up3, conv2])
+        conv9 = Conv2D(128, (3, 1), activation="relu", padding="same")(
+            conc_up_3
+        )  # 512 x 512 x 1
+        up4 = UpSampling2D((2, 2))(conv9)  # 28 x 28 x 64
+        conc_up_4 = Concatenate()([up4, conv1])
+        conv10 = Conv2D(64, (2, 2), activation="relu", padding="same")(
+            conc_up_4
+        )  # 512 x 512 x 1
+        decoded = Conv2D(1, (1, 1), activation=None, padding="same")(
+            conv10
+        )  # 512 x 512 x 1
+
+        return decoded
+
+    return local_network_function
 
 def padding_unet_single_1024(path_json):
     def local_network_function(input_img):
