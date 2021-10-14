@@ -2,7 +2,7 @@ import os
 import numpy as np
 import tensorflow
 from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import RMSprop
+from tensorflow.keras.optimizers import RMSprop, Adam
 from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler
 import deepinterpolation.loss_collection as lc
 from tensorflow.keras.layers import Input
@@ -136,7 +136,8 @@ class core_trainer:
         )  # , metrics=['mae'])
 
     def initialize_optimizer(self):
-        self.optimizer = RMSprop(lr=self.learning_rate)
+        # self.optimizer = RMSprop(lr=self.learning_rate)
+        self.optimizer = Adam(lr=self.learning_rate)
 
     def initialize_loss(self):
         self.loss = lc.loss_selector(self.loss_type)
