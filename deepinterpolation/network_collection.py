@@ -386,17 +386,15 @@ def unet_tetrode2(path_json):
 
         conv1 = Conv2D(64, 4, activation="relu", padding="same", input_shape=input_img.shape[1:])(
             input_img)
-        print(f'conv1 shape: {conv1.shape}')
+        print(f'first layer (conv1) shape: {conv1.shape}')
  
-         # 512 x 512 x 32
-        # CHANGE pool_size from (2,2) to (2,1)
         pool1 = MaxPooling2D(pool_size=(4, 2))(conv1)  # 14 x 14 x 32
-        print(f'pool1 shape: {pool1.shape}')
+        print(f'second layer (pool1) shape: {pool1.shape}')
         conv2 = Conv2D(128, (4, 1), activation="relu", padding="same")(
             pool1
-        )  # 256 x 256 x 64
-        print(f'conv2 shape: {conv2.shape}')
-        pool2 = MaxPooling2D(pool_size=(4, 1))(conv2)  # 7 x 7 x 64#
+        ) 
+        print(f'third layer (conv2) shape: {conv2.shape}')
+        pool2 = MaxPooling2D(pool_size=(4, 1))(conv2) 
         print(f'pool2 shape: {pool2.shape}')
 
         # conv3 = Conv2D(256, (3, 1), activation="relu", padding="same")(
