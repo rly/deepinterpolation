@@ -743,7 +743,6 @@ class Paired_CRCNS_HC1_Generator(DeepGenerator):
 
         # This is used to limit the total number of samples
         # -1 means to take all and is the default fall back
-
         if "total_samples" in self.json_data.keys():
             self.total_samples = self.json_data["total_samples"]
         else:
@@ -752,8 +751,8 @@ class Paired_CRCNS_HC1_Generator(DeepGenerator):
         # This is compatible with negative frames
         self.end_frame = self.json_data["end_frame"]
 
-        # CHANGE THIS
-        self.nb_probes = 6
+        # Number of channels
+        self.nb_probes = 4
 
         self.raw_data = np.memmap(self.raw_data_file, dtype="int16")
 
@@ -786,7 +785,7 @@ class Paired_CRCNS_HC1_Generator(DeepGenerator):
         self.raw_data = np.memmap(
             self.raw_data_file, dtype="int16", shape=shape)
 
-        # CHANGE
+        # Estimate the mean and variance
         local_data = self.raw_data[0:average_nb_samples, :4].flatten()
         local_data = local_data.astype("float32")
         self.local_mean = np.mean(local_data)
