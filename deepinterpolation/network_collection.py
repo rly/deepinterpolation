@@ -380,7 +380,7 @@ def unet_tetrode(path_json):
 def unet_tetrode2(path_json):
     def local_network_function(input_img):
 
-        conv1 = Conv2D(filters=64, kernel_size=(2, 2), activation="relu", padding="same")(x)
+        conv1 = Conv2D(filters=64, kernel_size=(2, 2), activation="relu", padding="same")(input_img)
         print(f'conv1 shape: {conv1.shape}')
         pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)  
         print(f'pool1 shape: {pool1.shape}')
