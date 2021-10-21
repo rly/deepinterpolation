@@ -721,6 +721,209 @@ class EphysGenerator(DeepGenerator):
         return input_full, output_full
 
 
+class MDAEphysGenerator(DeepGenerator):
+    "Generates data for Keras from an MDA file"
+
+    def __init__(self, json_path):
+        "Initialization"
+        super().__init__(json_path)
+
+        # this should be a path to the data FOLDER
+        self.raw_data_file = self.json_data["train_path"]
+        self.batch_size = self.json_data["batch_size"]
+
+        if "pre_post_frame" in self.json_data.keys():
+            self.pre_frame = self.json_data["pre_post_frame"]
+            self.post_frame = self.json_data["pre_post_frame"]
+        else:
+            self.pre_frame = self.json_data["pre_frame"]
+            self.post_frame = self.json_data["post_frame"]
+
+        self.pre_post_omission = self.json_data["pre_post_omission"]
+        self.start_frame = self.json_data["start_frame"]
+        self.steps_per_epoch = self.json_data["steps_per_epoch"]
+
+        # This is used to limit the total number of samples
+        # -1 means to take all and is the default fall back
+
+        if "total_samples" in self.json_data.keys():
+            self.total_samples = self.json_data["total_samples"]
+        else:
+            self.total_samples = -1
+
+        # This is compatible with negative frames
+        self.end_frame = self.json_data["end_frame"]
+
+        from spikeextractors import MdaRecordingExtractor
+        # assumes raw_fname='raw.mda', params_fname='params.json',
+        # geom_fname='geom.csv' and
+        # these files exist in raw_data_folder
+        self.rec_ext = MdaRecordingExtractor(self.raw_data_file)
+
+        # kampff data from spikeforest contains 32 channels
+        self.nb_probes = int(self.rec_ext.get_num_channels())
+        self.total_frame_per_movie = self.rec_ext.get_num_frames()
+
+        if self.end_frame < 0:
+            self.img_per_movie = (
+                self.total_frame_per_movie
+                + 1
+                + self.end_frame
+                - self.start_frame
+                - self.post_frame
+                - self.pre_post_omission
+            )
+        elif self.total_frame_per_movie < self.end_frame:
+            self.img_per_movie = (
+                self.total_frame_per_movie
+                - self.start_frame
+                - self.post_frame
+                - self.pre_post_omission
+            )
+        else:
+            self.img_per_movie = self.end_frame + 1 - self.start_frame
+
+        average_nb_samples = 200000
+        local_data = self.rec_ext.get_traces(  # get all channels
+            start_frame=0,
+            end_frame=average_nb_samples
+        )
+        local_data = local_data.flatten()
+        local_data = local_data.astype("float32")
+        self.local_mean = np.mean(local_data)
+        self.local_std = np.std(local_data)
+        self.epoch_index = 0
+        self.list_samples = np.arange(
+            self.start_frame, self.start_frame + self.img_per_movie
+        )
+        if "randomize" in self.json_data.keys():
+            if self.json_data["randomize"] == 1:
+                np.random.shuffle(self.list_samples)
+
+        # We cut the number of samples if asked to
+        if (self.total_samples > 0
+                and self.total_samples < len(self.list_samples)):
+            self.list_samples = self.list_samples[0: self.total_samples]
+
+    def __len__(self):
+        "Denotes the total number of batches"
+        return int(np.floor(float(len(self.list_samples)) / self.batch_size))
+
+    def on_epoch_end(self):
+        # We only increase index if steps_per_epoch
+        # is set to positive value. -1 will force the generator
+        # to not iterate at the end of each epoch
+        if self.steps_per_epoch > 0:
+            if self.steps_per_epoch * (self.epoch_index + 2) < self.__len__():
+                self.epoch_index = self.epoch_index + 1
+            else:
+                # if we reach the end of the data, we roll over
+                self.epoch_index = 0
+
+    def __getitem__(self, index):
+        # This is to ensure we are going through
+        # the entire data when steps_per_epoch<self.__len__
+        if self.steps_per_epoch > 0:
+            index = index + self.steps_per_epoch * self.epoch_index
+
+        # Generate indexes of the batch
+        if (index + 1) * self.batch_size > self.total_frame_per_movie:
+            indexes = np.arange(index * self.batch_size, self.img_per_movie)
+        else:
+            indexes = np.arange(index * self.batch_size,
+                                (index + 1) * self.batch_size)
+
+        shuffle_indexes = self.list_samples[indexes]
+        input_full = np.zeros(
+            [self.batch_size, int(self.nb_probes), 2,
+             self.pre_frame + self.post_frame],
+            dtype="float32",
+        )
+        output_full = np.zeros(
+            [self.batch_size, int(self.nb_probes), 2, 1], dtype="float32"
+        )
+
+        for batch_index, frame_index in enumerate(shuffle_indexes):
+            X, Y = self.__data_generation__(frame_index)
+
+            input_full[batch_index, :, :, :] = X
+            output_full[batch_index, :, :, :] = Y
+
+        return input_full, output_full
+
+    def __data_generation__(self, index_frame):
+        "Generates data containing batch_size samples"
+
+        # We reorganize to follow true geometry of probe for convolution
+        input_full = np.zeros(
+            [1, self.nb_probes, 2,
+             self.pre_frame + self.post_frame], dtype="float32"
+        )
+        output_full = np.zeros([1, self.nb_probes, 2, 1], dtype="float32")
+
+        input_index = np.arange(
+            index_frame - self.pre_frame - self.pre_post_omission,
+            index_frame + self.post_frame + self.pre_post_omission + 1,
+        )
+        input_index = input_index[input_index != index_frame]
+
+        for index_padding in np.arange(self.pre_post_omission + 1):
+            input_index = input_index[input_index !=
+                                      index_frame - index_padding]
+            input_index = input_index[input_index !=
+                                      index_frame + index_padding]
+
+        # TODO make this more efficient
+
+        # alternating filling with zeros padding
+        even = np.arange(0, self.nb_probes, 2)
+        odd = even + 1
+
+        data_img_input = np.zeros((len(input_index), int(self.nb_probes / 2), 2), dtype="float32")
+        for i, ii in enumerate(input_index):
+            # x =   # nb_probes/2 x 1
+            # breakpoint()
+            data_img_input[i, :, 0] = self.rec_ext.get_traces(
+                channel_ids=even,
+                start_frame=ii,
+                end_frame=ii+1
+            ).flatten()
+            data_img_input[i, :, 1] = self.rec_ext.get_traces(
+                channel_ids=odd,
+                start_frame=ii,
+                end_frame=ii+1
+            ).flatten()  # nb_probes/2 x 1
+        data_img_output = np.zeros((int(self.nb_probes / 2), 2), dtype="float32")
+        data_img_output[:, 0] = self.rec_ext.get_traces(
+            channel_ids=even,
+            start_frame=index_frame,
+            end_frame=index_frame+1
+        ).flatten()  # nb_probes/2 x 1
+        data_img_output[:, 1] = self.rec_ext.get_traces(
+            channel_ids=odd,
+            start_frame=index_frame,
+            end_frame=index_frame+1
+        ).flatten()  # nb_probes/2 x 1
+
+        data_img_input = np.swapaxes(data_img_input, 1, 2)
+        data_img_input = np.swapaxes(data_img_input, 0, 2)
+
+        data_img_input = (
+            data_img_input.astype("float32") - self.local_mean
+        ) / self.local_std
+        data_img_output = (
+            data_img_output.astype("float32") - self.local_mean
+        ) / self.local_std
+
+        input_full[0, even, 0, :] = data_img_input[:, 0, :]
+        input_full[0, odd, 1, :] = data_img_input[:, 1, :]
+
+        output_full[0, even, 0, 0] = data_img_output[:, 0]
+        output_full[0, odd, 1, 0] = data_img_output[:, 1]
+
+        return input_full, output_full
+
+
 class MultiContinuousTifGenerator(DeepGenerator):
     """This generator is used when dealing with a continuous movie split
     in multiple blocks of frames each within individual tif files as is
