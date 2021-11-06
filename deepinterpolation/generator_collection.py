@@ -783,9 +783,10 @@ class KampffEphysGenerator(EphysGenerator):
         # self.total_frame_per_movie = int(self.raw_data.size / self.nb_probes)
         #
         # TODO why not also subtract self.pre_frame???
-        self.img_per_movie = (npx_samples - self.post_frame - self.pre_post_omission)
+        # self.img_per_movie = (npx_samples - self.post_frame - self.pre_post_omission)
+        self.img_per_movie = self.end_frame + 1 - self.start_frame
         self.total_frame_per_movie = npx_samples
-        average_nb_samples = 200000
+        average_nb_samples = 100000
         #
         # shape = (self.total_frame_per_movie, int(self.nb_probes / 2), 2)
         # # load it with the correct shape
