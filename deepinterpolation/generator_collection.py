@@ -721,6 +721,95 @@ class EphysGenerator(DeepGenerator):
         return input_full, output_full
 
 
+class KampffEphysGenerator(EphysGenerator):
+    "Generates data for Keras"
+
+    def __init__(self, json_path):
+        "Initialization"
+        super().__init__(json_path)
+
+        self.raw_data_file = self.json_data["train_path"]
+        self.batch_size = self.json_data["batch_size"]
+
+        if "pre_post_frame" in self.json_data.keys():
+            self.pre_frame = self.json_data["pre_post_frame"]
+            self.post_frame = self.json_data["pre_post_frame"]
+        else:
+            self.pre_frame = self.json_data["pre_frame"]
+            self.post_frame = self.json_data["post_frame"]
+
+        self.pre_post_omission = self.json_data["pre_post_omission"]
+        self.start_frame = self.json_data["start_frame"]
+        self.steps_per_epoch = self.json_data["steps_per_epoch"]
+
+        # This is used to limit the total number of samples
+        # -1 means to take all and is the default fall back
+
+        if "total_samples" in self.json_data.keys():
+            self.total_samples = self.json_data["total_samples"]
+        else:
+            self.total_samples = -1
+
+        # This is compatible with negative frames
+        self.end_frame = self.json_data["end_frame"]
+
+        self.nb_probes = 384
+
+        npx_recording = np.memmap(self.raw_data_file, mode='r', dtype=np.int16, order='C')
+        npx_samples = int(len(npx_recording)/self.nb_probes)
+        npx_recording = npx_recording.reshape((self.nb_probes, npx_samples), order='F')
+        npx_recording = npx_recording.T
+        self.raw_data = npx_recording.reshape((npx_samples, int(self.nb_probes / 2), 2))
+
+        # if self.end_frame < 0:
+        #     self.img_per_movie = (
+        #         int(self.raw_data.size / self.nb_probes)
+        #         + 1
+        #         + self.end_frame
+        #         - self.start_frame
+        #         - self.post_frame
+        #         - self.pre_post_omission
+        #     )
+        # elif int(self.raw_data.size / self.nb_probes) < self.end_frame:
+        #     self.img_per_movie = (
+        #         int(self.raw_data.size / self.nb_probes)
+        #         - self.start_frame
+        #         - self.post_frame
+        #         - self.pre_post_omission
+        #     )
+        # else:
+        #     self.img_per_movie = self.end_frame + 1 - self.start_frame
+        #
+        # self.total_frame_per_movie = int(self.raw_data.size / self.nb_probes)
+        #
+        # TODO why not also subtract self.pre_frame???
+        self.img_per_movie = (npx_samples - self.post_frame - self.pre_post_omission)
+        self.total_frame_per_movie = npx_samples
+        average_nb_samples = 200000
+        #
+        # shape = (self.total_frame_per_movie, int(self.nb_probes / 2), 2)
+        # # load it with the correct shape
+        # self.raw_data = np.memmap(
+        #     self.raw_data_file, dtype="int16", shape=shape)
+
+        local_data = self.raw_data[0:average_nb_samples, :, :].flatten()
+        local_data = local_data.astype("float32")
+        self.local_mean = np.mean(local_data)
+        self.local_std = np.std(local_data)
+        self.epoch_index = 0
+        self.list_samples = np.arange(
+            self.start_frame, self.start_frame + self.img_per_movie
+        )
+        if "randomize" in self.json_data.keys():
+            if self.json_data["randomize"] == 1:
+                np.random.shuffle(self.list_samples)
+
+        # We cut the number of samples if asked to
+        if (self.total_samples > 0
+                and self.total_samples < len(self.list_samples)):
+            self.list_samples = self.list_samples[0: self.total_samples]
+
+
 class MDAEphysGenerator(DeepGenerator):
     "Generates data for Keras from an MDA file"
 
