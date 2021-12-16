@@ -24,8 +24,8 @@ generator_param["train_path"] = os.path.join(
 )
 
 generator_param["batch_size"] = 100
-generator_param["start_frame"] = 100
-generator_param["end_frame"] = -1  # -1 to go until the end.
+generator_param["start_frame"] = 0
+generator_param["end_frame"] = 1800000  # -1 to go until the end.
 generator_param[
     "randomize"
 ] = 0  # This is important to keep the order and avoid the randomization used during training
@@ -42,7 +42,7 @@ inferrence_param[
 # Replace this path to where you want to store your output file
 inferrence_param[
     "output_file"
-] = "test_kampff/output.h5"
+] = f"test_kampff/c14_npx_raw_nSamples{generator_param['end_frame']}_di.h5"
 
 jobdir = "./test_kampff"
 

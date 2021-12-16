@@ -9,7 +9,7 @@ npx_recording = np.memmap(input_path, mode='r', dtype=np.int16, order='C')
 npx_samples = int(len(npx_recording)/npx_channels)
 npx_recording = npx_recording.reshape((npx_channels, npx_samples), order='F')
 
-num_samples = 120000
+num_samples = 30000*60  # one minute
 npx_recording = npx_recording[:, :num_samples]
 
 output_path = f"{os.path.splitext(input_path)[0]}_nSamples{num_samples}.h5"

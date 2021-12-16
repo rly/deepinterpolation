@@ -2,7 +2,7 @@ import h5py
 import numpy as np
 import os
 
-output_path = r"C:\Users\Ryan\Documents\SpikeSorting\deepinterpolation\test_kampff\c14_npx_raw_nSamples120000_di.h5"
+output_path = r"C:\Users\Ryan\Documents\SpikeSorting\deepinterpolation\test_kampff\c14_npx_raw_nSamples1800000_di.h5"
 
 f = h5py.File(output_path, 'r')
 output = np.squeeze(f['/data'][:])

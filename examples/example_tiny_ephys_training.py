@@ -85,7 +85,7 @@ training_param["pre_post_frame"] = generator_test_param["pre_post_frame"]
 training_param["loss"] = "mean_absolute_error"
 training_param[
     "nb_workers"
-] = 16  # this is to enable multiple threads for data generator loading. Useful when this is slower than training
+] = 1  # this is to enable multiple threads for data generator loading. Useful when this is slower than training
 
 training_param["model_string"] = (
     network_param["name"]
@@ -97,7 +97,7 @@ training_param["model_string"] = (
 
 # Where do you store ongoing training progress
 jobdir = os.path.join(
-    "/Users/jeromel/test", training_param["model_string"] + "_" + run_uid,
+    "test", training_param["model_string"] + "_" + run_uid,
 )
 training_param["output_dir"] = jobdir
 
