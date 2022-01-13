@@ -9,7 +9,7 @@ if __name__ == '__main__':
     # We are reusing the data generator for training here. Some parameters
     # like steps_per_epoch are irrelevant but currently needs to be provided
     generator_param["type"] = "generator"
-    generator_param["name"] = "EphysGenerator"
+    generator_param["name"] = "KampffEphysGenerator"
     generator_param["pre_post_frame"] = 30
     generator_param["pre_post_omission"] = 1
     generator_param[
@@ -19,15 +19,18 @@ if __name__ == '__main__':
     # -1 deactivate it.
 
     generator_param["train_path"] = os.path.join(
-        pathlib.Path(__file__).parent.absolute(),
-        "..",
-        "sample_data",
-        "ephys_tiny_continuous.dat2",
+        # pathlib.Path(__file__).parent.absolute(),
+        # "..",
+        # "sample_data",
+        # "ephys_tiny_continuous.dat2",
+        "/global/cscratch1/sd/rly/deepinterpolation/data/",
+        "c14",
+        "c14_npx_raw.bin",
     )
 
     generator_param["batch_size"] = 100
     generator_param["start_frame"] = 100
-    generator_param["end_frame"] = 200  # -1 to go until the end.
+    generator_param["end_frame"] = -1  # -1 to go until the end.
     generator_param[
         "randomize"
     ] = 0
@@ -40,17 +43,14 @@ if __name__ == '__main__':
     # Replace this path to where you stored your model
     inferrence_param[
         "model_path"
-    ] = "/Users/jeromel/Documents/Work documents/Allen Institute/Projects\
-        /Deep2P/repos/public/deepinterpolation_models/deep_interpolation_\
-        neuropixel_v1/2020_02_29_15_28_unet_single_ephys_1024_mean_squared\
-        _error-1050.h5"
+    ] = "sample_data/2020_02_29_15_28_unet_single_ephys_1024_mean_squared_error-1050.h5"
 
     # Replace this path to where you want to store your output file
     inferrence_param[
         "output_file"
-    ] = "/Users/jeromel/test/ephys_tiny_continuous_deep_interpolation.h5"
+    ] = "test_kampff/output.h5"
 
-    jobdir = "/Users/jeromel/test/"
+    jobdir = "./test_kampff"
 
     try:
         os.mkdir(jobdir)
