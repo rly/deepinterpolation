@@ -756,36 +756,18 @@ class KampffEphysGenerator(EphysGenerator):
         self.nb_probes = 384
 
         npx_recording = np.memmap(self.raw_data_file, mode='r', dtype=np.int16, order='C')
-        npx_samples = int(len(npx_recording)/self.nb_probes)
-        npx_recording = npx_recording.reshape((self.nb_probes, npx_samples), order='F')
+        self.total_frame_per_movie = int(len(npx_recording)/self.nb_probes)
+        npx_recording = npx_recording.reshape((self.nb_probes, self.total_frame_per_movie), order='F')
         npx_recording = npx_recording.T
-        self.raw_data = npx_recording.reshape((npx_samples, int(self.nb_probes / 2), 2))
+        self.raw_data = npx_recording.reshape((self.total_frame_per_movie, int(self.nb_probes / 2), 2))
 
-        # if self.end_frame < 0:
-        #     self.img_per_movie = (
-        #         int(self.raw_data.size / self.nb_probes)
-        #         + 1
-        #         + self.end_frame
-        #         - self.start_frame
-        #         - self.post_frame
-        #         - self.pre_post_omission
-        #     )
-        # elif int(self.raw_data.size / self.nb_probes) < self.end_frame:
-        #     self.img_per_movie = (
-        #         int(self.raw_data.size / self.nb_probes)
-        #         - self.start_frame
-        #         - self.post_frame
-        #         - self.pre_post_omission
-        #     )
-        # else:
-        #     self.img_per_movie = self.end_frame + 1 - self.start_frame
-        #
-        # self.total_frame_per_movie = int(self.raw_data.size / self.nb_probes)
-        #
-        # TODO why not also subtract self.pre_frame???
-        # self.img_per_movie = (npx_samples - self.post_frame - self.pre_post_omission)
+        # This is to handle selecting the end of the movie
+        if self.end_frame < 0:
+            self.end_frame = self.total_frame_per_movie + self.end_frame
+        elif self.total_frame_per_movie <= self.end_frame:
+            self.end_frame = self.total_frame_per_movie - 1
+
         self.img_per_movie = self.end_frame + 1 - self.start_frame
-        self.total_frame_per_movie = npx_samples
         average_nb_samples = 100000
         #
         # shape = (self.total_frame_per_movie, int(self.nb_probes / 2), 2)
