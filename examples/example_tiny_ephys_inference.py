@@ -24,7 +24,6 @@ if __name__ == '__main__':
         # "sample_data",
         # "ephys_tiny_continuous.dat2",
         "/global/cscratch1/sd/rly/deepinterpolation/data/",
-        "ephys_tiny_continuous.dat2",
         "c14",
         "c14_npx_raw.bin",
     )
