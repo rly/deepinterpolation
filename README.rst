@@ -1,100 +1,129 @@
 .. image:: https://circleci.com/gh/AllenInstitute/deepinterpolation.svg?style=svg
     :target: https://circleci.com/gh/AllenInstitute/deepinterpolation
 
-Deep Interpolation
-========================
+
+# **Deep Interpolation**
+
 
 *deepinterpolation* is a Python library to denoise data by removing independent noise. Importantly training does **NOT** require ground truth. This repository is currently meant to support the bioRxiv publication results : https://www.biorxiv.org/content/10.1101/2020.10.15.341602v1
 
-Principle of Deep Interpolation
-========================
+
+# **Principle of Deep Interpolation**
+
+
 .. image:: /docs/principle.png
     :alt: principle of deep interpolation
-    :width: 100 px
+    :width: 700 px
+	
 **Figure 1** - Schematic introducing the principles of deep interpolation.  **A**. An interpolation model is trained to predict a noisy block from other blocks with independent noise. The loss is the difference between the predicted data and a new noisy block. **B**. The interpolation model is used to create a noiseless version of the input data. 
 
 For more information, consult the associated bioRxiv publication : https://www.biorxiv.org/content/10.1101/2020.10.15.341602v1
 
-Support
-========================
 
-For bug and issues, please submit issue tickets on this repository. 
-For installation and running support, join the slack channel (if invitation has expired: email to Jerome): https://join.slack.com/t/deepinterpolation/shared_invite/zt-rkmcw7h1-v8y0Grwe3fZg4m~DiAQVMg
+# **Support**
 
-Installation
-========================
+For bug and issues, please submit issue tickets on this repository. For installation and running support, we are trying to move to using the more public discussion forum on this repository (https://github.com/AllenInstitute/deepinterpolation/discussions). Alternatively you can join the slack channel where the past support history was saved (if invitation has expired: email to Jerome): https://join.slack.com/t/deepinterpolation/shared_invite/zt-rkmcw7h1-v8y0Grwe3fZg4m~DiAQVMg
 
-The following outlines how to install on your local machine. This should take no more than a few minutes. This was tested on a macOS Catalina but should be adapted depending on your final environment (institution cluster, AWS EC2 instance, ...). Tensorflow made a lot of progress lately to install GPU dependencies. However, you might have to consult tensorflow documentation to enable your GPU. The small training example below works on both CPU and GPU architecture (ie. even a small macbook). If you are not familiar with using deep learning, we recommend to play with smaller datasets first, such as the example Neuropixels data provided. 
+# **Installation**
 
-1. Clone the repository locally on a directory 'local_dir'
+In all cases, unless you only want to work from CPU, you will have to consider installing tensorflow GPU dependencies (ie. cuda drivers). To that end, you might have to consult tensorflow documentation to enable your GPU. 
 
-.. code-block:: bash
+To install the package, you have 2 options. 
+
+1. Install from pypi using: 
+
+Create new conda environment called 'local_env'
+
+	conda create -n local_env python=3.7
+    
+Our integration tests on the CI server are currently running with python 3.7. While it is likely working with other versions, we cannot guarantee it. 
+
+	pip install deepinterpolation
+
+This will install the latest deployed stable version and only the core components of the library. You will NOT have access to sample datasets present on this repository. 
+
+2. Install from a clone of this repository. 
+
+This will give you access to the latest developments as well as the provided sample data. Our step by step example assume this installation mode as it depends on the sample datasets. 
+
+The small training examples below works on both CPU and GPU architecture (ie. even a small macbook). If you are not familiar with using deep learning, we recommend to play with smaller datasets first, such as the example Neuropixel data provided. 
+
+* Clone the repository locally on a directory 'local_dir'
 
 	git clone https://github.com/AllenInstitute/deepinterpolation.git
 
-2. Go to that directory
-
-.. code-block:: bash
+* Go to that directory
 
 	cd 'local_dir'
 
-3. Create new conda environment called 'local_env'
+* Create new conda environment called 'local_env'
 
-.. code-block:: bash
+	conda create -n local_env python=3.7
 
-	conda create -n local_env python=3.8
+Our integration tests on the CI server are currently running with python 3.7. While it is likely working with other versions, we cannot guarantee it. 
 
-4. activate environment
-
-.. code-block:: bash
+* activate environment
 
 	conda activate local_env
 
-5. install necessary packages
-
-.. code-block:: bash
+* install necessary packages
 
 	make init
 
-6. install deepinterpolation package
-
-.. code-block:: bash
+* install deepinterpolation package
 
 	python setup.py install
 
-General code description
-========================
-The files in the deepinterpolation folder contains the core classes for training, inferrence, loss calculation and network generations. Those are called 'Collection'. Each collection is essentially a local list of functions that are used to create different type of objects and can be extended on one another. 
+# **Descrition and use of the Command Line Interface (CLI).** 
+
+DeepInterpolation 0.1.3 introduced a refactored interface to use the package. The purpose of this mode is to faciliate deployment of deepinterpolation and provide a consistent API for use. Example use of the CLI are provided in the *examples/* folder under cli_*.
+
+There are two modes that you can use:
+
+* Scripting mode: 
+
+In this mode you construct a set of dictionaries of parameters and feed them to the training, inference or finetuning objects within a python script. This mode is useful to iterate and improve your jobs. Example of this mode are provided in the *examples/* folder as cli_*.py files. 
+
+* Command-line mode: 
+
+In this mode, you save the dictionary into a json file and provide the path to this file as a parameter through the command line. This mode is useful for deploying your jobs at a larger scale. Typically your json file is mostly the same from job to job. Example of this mode are provided in the *examples/* folder as cli_*.sh and cli_*.json files. 
+
+All parameters of the CLI are documented within the schema. To access the documentation, type down : 
+
+	python -m deepinterpolation.cli.training --help 
+
+or
+
+	python -m deepinterpolation.cli.inference --help 
+
+or 
+
+	python -m deepinterpolation.cli.fine_tuning --help 
+
+# **General package description**
+
+The files in the deepinterpolation folder contain the core classes for training, inferrence, loss calculation and network generations. Those are called 'Collection'. Each collection is essentially a local list of functions that are used to create different type of objects and can be extended on one another. 
 For instance, the network_collection.py contains a list of networks that can be generated for training. This allows for quick iteration and modification of an architecture while keeping the code organized. 
 
-FAQ
-========================
+# **FAQ**
+
 See here : https://github.com/AllenInstitute/deepinterpolation/tree/master/faq
 
-Training
-========================
-To adapt DeepInterpolation to a new dataset, you will need to use or recreate a generator in 'generator_collection.py'. Those are all constructed from a core class called 'DeepGenerator'. The 'CollectorGenerator' class allows to group generators if your dataset is distributed across many files/folder/sources. 
-This system was designed to allow to train very large DeepInterpolation models from TB of data distributed on a network infrastructure. 
+# **Example training**
 
-To try out training your own DeepInterpolation network, we recommend to start with this file: https://github.com/AllenInstitute/deepinterpolation/blob/master/examples/example_tiny_ephys_training.py
+To try out training your own DeepInterpolation network, we recommend to start with this file: https://github.com/AllenInstitute/deepinterpolation/blob/master/examples/cli_example_tiny_ephys_training.py
 
-In this file, you will need to edit the jobdir variable, in particular change "/Users/jeromel/test" to a local folder appropriate to save your models. 
+In this file, you will need to edit the paths to a local folder appropriate to save your models. 
 
 Then, activate your conda env called 'local_env'
 
-.. code-block:: bash
-
 	conda activate local_env
 	
-then run 
+then run
 
-.. code-block:: bash
+	python cli_example_tiny_ephys_training.py
 
-	python example_tiny_ephys_training.py
-
-If everything runs correctly, you should see the following in just a few minutes : 
-
-.. code-block:: bash
+If everything runs correctly, you should see the following in just a few minutes :
 
 	2020-10-19 18:01:03.735098: I tensorflow/core/platform/cpu_feature_guard.cc:142] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN)to use the following CPU instructions in performance-critical operations:  AVX2 FMA
 	To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
@@ -115,16 +144,16 @@ If everything runs correctly, you should see the following in just a few minutes
 	Saved model to disk
 
 This is a toy example but you can increase the number of training frames to increase the quality of the model. 
-All parameters are commented in the file. To adjust to a larger dataset, change the train_path parameters, the start_frame and end_frame parameters. 
+All parameters are commented in the file. To adjust to a larger dataset, change the path parameters, the start_frame and end_frame parameters.
+Please consult the CLI documentation mentioned above for more details of each parameter.
 
-Inference
-========================
+# **Example inference**
 
-Raw pre-trained models are available either as part of Tensorflow ModelServer in an AWS docker environment or as a separate h5 file on Dropbox. 
+Raw pre-trained models are available as separate h5 file on Dropbox. 
 
 The following models are currently available : 
 
-**Two-photon Ai93 excitatory line DeepInterpolation network:**
+*Two-photon Ai93 excitatory line DeepInterpolation network:*
 
 Key recording parameters: 
 
@@ -137,7 +166,7 @@ Key recording parameters:
 - Dropbox link : https://www.dropbox.com/sh/vwxf1uq2j60uj9o/AAC9BQI1bdfmAL3OFO0lmVb1a?dl=0
 - Training data : https://github.com/AllenInstitute/deepinterpolation/blob/master/examples/paper_generation_code/json_data/2019-09-05-train-very-large-single-plane-Ai93-norm.json
 
-**Two-photon Ai148 excitatory line DeepInterpolation network:**
+*Two-photon Ai148 excitatory line DeepInterpolation network:*
 
 Key recording parameters: 
 
@@ -151,7 +180,7 @@ Key recording parameters:
 - Dropxbox link : https://www.dropbox.com/sh/u9h9mhppkmku5bs/AAD9UoomhB3D4JfLV7zT9Y_Ca?dl=0
 - Training data : https://github.com/AllenInstitute/deepinterpolation/blob/master/examples/paper_generation_code/json_data/2019-09-05-train-very-large-single-plane-Ai148-norm.json
 
-**Neuropixel DeepInterpolation network:**
+*Neuropixel DeepInterpolation network:*
 
 Key recording parameters: 
 
@@ -165,7 +194,7 @@ Key recording parameters:
 - Docker hub id : 245412653747/deep_interpolation:allen_neuropixel
 - Dropxbox link : https://www.dropbox.com/sh/tm3epzil44ybalq/AACyKxfvvA2T_Lq_rnpHnhFma?dl=0
 
-**fMRI DeepInterpolation network:**
+*fMRI DeepInterpolation network:*
 
 Key recording parameters: 
 
@@ -174,27 +203,19 @@ Key recording parameters:
 - Docker hub id : 245412653747/deep_interpolation:allen_3_3_3_tr_3000_fmri
 - Dropxbox link : https://www.dropbox.com/sh/ngx5plndmd4jsca/AAAkR-_4_E7VyL8WzEC7twuza?dl=0
 
+To start inference, we recommend to start with this file: https://github.com/AllenInstitute/deepinterpolation/blob/master/examples/cli_example_tiny_ephys_inference.py
 
-
-To start inference, we recommend to start with this file: https://github.com/AllenInstitute/deepinterpolation/blob/master/examples/example_tiny_ephys_inference.py
-
-In this file, you will need to edit the train_path, model_path and output_file variable to fit your local paths. 
+In this file, you will need to edit the paths strings to fit your local paths. 
 
 Then, activate your conda env called 'local_env'
 
-.. code-block:: bash
-
 	conda activate local_env
 	
-then run 
+then run:
 
-.. code-block:: bash
+	python cli_example_tiny_ephys_inference.py
 
-	python example_tiny_ephys_inference.py
-
-If everything runs correctly, you should see the following in just a few minutes : 
-
-.. code-block:: bash
+If everything runs correctly, you should see the following in just a few minutes:
 
 	2020-10-20 14:10:37.549061: I tensorflow/core/platform/cpu_feature_guard.cc:142] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN)to use the following CPU instructions in performance-critical operations:  AVX2 FMA
 	To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
@@ -203,12 +224,18 @@ If everything runs correctly, you should see the following in just a few minutes
 	2020-10-20 14:10:37.564156: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
 
 This is a toy example but you can increase the start_frame and end_frame variable for larger data. 
+
 It is important to keep in mind that this process is easily parallelizable. In practice, we wrapped this code with additional routines to leverage 20 to 100 cluster CPU nodes to accelerate this process. You could also use GPU nodes as well, we just had access to a much larger number of CPU machines quickly.  
 
-More on using the Tensorflow ModelServer soon. Those are usefull to deploy to AWS and/or avoid installing GPUs related packages. 
+# **Adapting the module to a newer data structure**
 
-License
-========================
+To adapt DeepInterpolation to a new dataset, you will need to use or recreate a generator in 'generator_collection.py'. Those are all constructed from core classes called *DeepGenerator* and *SequentialGenerator*. 
+
+The *CollectorGenerator* class allows to group generators if your dataset is distributed across many files/folder/sources. 
+This system was designed to allow to train very large DeepInterpolation models from TB of data distributed on a network infrastructure. 
+The *CollectorGenerator* is not currently supported throught the CLI and will be replaced with a simpler API in a future release. 
+
+# **License**
 
 Allen Institute Software License – This software license is the 2-clause BSD 
 license plus clause a third clause that prohibits redistribution and use for 
