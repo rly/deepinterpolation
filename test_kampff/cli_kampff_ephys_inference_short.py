@@ -2,6 +2,7 @@ import os
 from deepinterpolation.cli.inference import Inference
 
 if __name__ == '__main__':
+    os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'  # necessary for interactive mode on cori
     generator_param = {}
     inference_param = {}
 
