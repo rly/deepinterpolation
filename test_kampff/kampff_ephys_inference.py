@@ -21,7 +21,7 @@ if __name__ == '__main__':
         # "..",
         # "sample_data",
         # "ephys_tiny_continuous.dat2",
-        "/global/cscratch1/sd/rly/deepinterpolation/data/",
+        "$SCRATCH/deepinterpolation/data/",
         "c14",
         "c14_npx_raw.bin",
     )
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # Replace this path to where you stored your model
     inferrence_param[
         "model_path"
-    ] = "/home/rly/sample_data/2020_02_29_15_28_unet_single_ephys_1024_mean_squared_error-1050.h5"
+    ] = "$HOME/deepinterpolation/sample_data/2020_02_29_15_28_unet_single_ephys_1024_mean_squared_error-1050.h5"
 
     # Replace this path to where you want to store your output file
     inferrence_param[
