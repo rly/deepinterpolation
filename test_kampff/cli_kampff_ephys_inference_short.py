@@ -11,7 +11,7 @@ if __name__ == '__main__':
     generator_param["pre_post_frame"] = 30
     generator_param["pre_post_omission"] = 1
 
-    generator_param["data_path"] = "$SCRATCH/deepinterpolation/data/c14/c14_npx_raw.bin"
+    generator_param["data_path"] = "/global/cscratch1/sd/rly/deepinterpolation/data/c14/c14_npx_raw.bin"
     # Note the CLI has changed train_path to data_path to take into account
     # the use of generators for inference
 

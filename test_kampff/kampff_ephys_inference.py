@@ -16,15 +16,7 @@ if __name__ == '__main__':
     # -1 deactivate it.
     generator_param["steps_per_epoch"] = -1
 
-    generator_param["train_path"] = os.path.join(
-        # pathlib.Path(__file__).parent.absolute(),
-        # "..",
-        # "sample_data",
-        # "ephys_tiny_continuous.dat2",
-        "$SCRATCH/deepinterpolation/data/",
-        "c14",
-        "c14_npx_raw.bin",
-    )
+    generator_param["train_path"] = "/global/cscratch1/sd/rly/deepinterpolation/data/c14/c14_npx_raw.bin"
 
     generator_param["batch_size"] = 100
     generator_param["start_frame"] = 100
