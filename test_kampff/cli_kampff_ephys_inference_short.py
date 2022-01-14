@@ -8,7 +8,8 @@ if __name__ == '__main__':
     # We are reusing the data generator for training here. Some parameters like
     # steps_per_epoch are irrelevant but currently needs to be provided
     generator_param["name"] = "KampffEphysGenerator"
-    generator_param["pre_post_frame"] = 30
+    generator_param["pre_frame"] = 30
+    generator_param["post_frame"] = 30
     generator_param["pre_post_omission"] = 1
 
     generator_param["data_path"] = "/global/cscratch1/sd/rly/deepinterpolation/data/c14/c14_npx_raw.bin"
@@ -18,6 +19,7 @@ if __name__ == '__main__':
     generator_param["batch_size"] = 100
     generator_param["start_frame"] = 100
     generator_param["end_frame"] = 1000  # -1 to go until the end.
+    generator_param["randomize"] = False  # should be False for inference
 
     inference_param["name"] = "core_inferrence"
 
