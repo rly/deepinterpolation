@@ -497,6 +497,8 @@ class SequentialGenerator(DeepGenerator):
                 and self.total_samples < len(self.list_samples)):
             self.list_samples = self.list_samples[0: self.total_samples]
 
+        print(f"Sampling from index {self.list_samples[0]} to {self.list_samples[-1]}")
+
     def on_epoch_end(self):
         """We only increase index if steps_per_epoch is set to positive value.
         -1 will force the generator to not iterate at the end of each epoch."""
