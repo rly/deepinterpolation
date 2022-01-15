@@ -649,7 +649,7 @@ class KampffEphysGenerator(EphysGenerator):
         npx_recording = npx_recording.reshape((self.nb_probes, self.total_frame_per_movie), order='F')
         npx_recording = npx_recording.T
         self.raw_data = npx_recording.reshape((self.total_frame_per_movie, int(self.nb_probes / 2), 2))
-        print(f"Raw data size: {self.raw_data.size}")
+        print(f"Raw data shape: {self.raw_data.shape}")
 
         self._update_end_frame(self.total_frame_per_movie)
         self._calculate_list_samples(self.total_frame_per_movie)
