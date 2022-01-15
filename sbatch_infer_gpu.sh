@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -q regular
 #SBATCH -A m3513
-#SBATCH -t 3:59:59
+#SBATCH -t 2:59:59
 #SBATCH -n 1
 #SBATCH -o /global/cscratch1/sd/rly/deepinterpolation/test_kampff/infer.%j.log
 #SBATCH -e /global/cscratch1/sd/rly/deepinterpolation/test_kampff/infer.%j.log
