@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     generator_param["batch_size"] = 100
     generator_param["start_frame"] = 100
-    generator_param["end_frame"] = 1000  # -1 to go until the end.
+    generator_param["end_frame"] = -1  # -1 to go until the end.
     generator_param["randomize"] = False  # should be False for inference
 
     inference_param["name"] = "core_inferrence"
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     }
 
     # Replace this path to where you want to store your output file
-    inference_param["output_file"] = "test_kampff/output_short.h5"
+    inference_param["output_file"] = "/global/cscratch1/sd/rly/deepinterpolation/output/c14.h5"
 
     # This option is to add blank frames at the onset and end of the output
     # movie if some output frames are missing input frames to go through

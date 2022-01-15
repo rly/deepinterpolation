@@ -37,9 +37,9 @@ if __name__ == '__main__':
     # Replace this path to where you want to store your output file
     inferrence_param[
         "output_file"
-    ] = "test_kampff/output.h5"
+    ] = "/global/cscratch1/sd/rly/deepinterpolation/output/c14.h5"
 
-    jobdir = "./test_kampff"
+    jobdir = "/global/cscratch1/sd/rly/deepinterpolation/jobs/"
 
     try:
         os.mkdir(jobdir)
