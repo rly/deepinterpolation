@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 input_path = '/global/cscratch1/sd/rly/deepinterpolation/output/c14.h5'  # TODO take in a CLI argument
-memory_per_chunk_in_bytes = 4e8
+memory_per_chunk_in_bytes = 4e9
 
 with h5py.File(input_path, 'r') as f:
     num_samples = f['/data'].shape[0]
@@ -28,7 +28,7 @@ with open(output_path, 'w+') as binary_f:
         for chunk_ind in range(num_chunks):
             samples_this_chunk = np.min([(chunk_ind+1)*num_samples_per_chunk, num_samples]) - chunk_ind*num_samples_per_chunk
             di_output = np.zeros((num_channels, samples_this_chunk))
-            output = f['/data'][chunk_ind*num_samples_per_chunk:chunk_ind*num_samples_per_chunk+samples_this_chunk,:,:,0]
+            output = f['/data'][chunk_ind*num_samples_per_chunk:chunk_ind*num_samples_per_chunk+samples_this_chunk,:,:]
             di_output[even, :] = output[:, even, 0].T
             di_output[odd, :] = output[:, odd, 1].T
             # save to int16
