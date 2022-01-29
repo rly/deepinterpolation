@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 input_path = '/global/cscratch1/sd/rly/deepinterpolation/output/c14.h5'  # TODO take in a CLI argument
-memory_per_chunk_in_bytes = 4e9
+memory_per_chunk_in_bytes = 4e8
 
 with h5py.File(input_path, 'r') as f:
     num_samples = f['/data'].shape[0]
