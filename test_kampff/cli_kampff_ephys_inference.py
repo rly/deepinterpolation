@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     generator_param["batch_size"] = 100
     generator_param["start_frame"] = 0  # 0 to start at earliest frame
-    generator_param["end_frame"] = 100000  # -1 to go until the end
+    generator_param["end_frame"] = 2000000  # -1 to go until the end
     generator_param["randomize"] = False  # should be False for inference
 
     inference_param["name"] = "core_inferrence"
